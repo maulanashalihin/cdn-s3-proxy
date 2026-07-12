@@ -1,0 +1,15 @@
+[Unit]
+Description=CDN Proxy — Wasabi cache via Go Fiber
+After=network.target
+
+[Service]
+Type=simple
+User=maulana
+WorkingDirectory=/home/maulana/projects/cdn-proxy
+ExecStart=/home/maulana/projects/cdn-proxy/cdn-proxy
+EnvironmentFile=/home/maulana/projects/cdn-proxy/.env
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

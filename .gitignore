@@ -1,0 +1,27 @@
+# Binaries
+cdn-proxy
+
+# Env files (contains secrets)
+.env
+
+# Cache directory
+/cache/
+/var/cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+go.work
+go.work.sum
+
+# Temp
+tmp/
+*.tmp
