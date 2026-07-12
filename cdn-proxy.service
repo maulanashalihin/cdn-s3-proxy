@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=maulana
-WorkingDirectory=/home/maulana/projects/cdn-proxy
-ExecStart=/home/maulana/projects/cdn-proxy/cdn-proxy
-EnvironmentFile=/home/maulana/projects/cdn-proxy/.env
+User=root
+WorkingDirectory=/etc/cdn-proxy
+ExecStart=/usr/local/bin/cdn-proxy
+EnvironmentFile=/etc/cdn-proxy/.env
 Restart=always
 RestartSec=5
 

@@ -27,25 +27,53 @@ Every request is fetched from Wasabi with proper AWS Signature V4, cached to dis
 
 ## Quick start
 
+### Opsi A: Package manager (Ubuntu/Debian)
+
+_TBD — future APT repo_
+
+### Opsi B: Install dari release (recommended)
+
 ```bash
-# Clone
-git clone https://github.com/maulanashalihin/cdn-s3-proxy.git
-cd cdn-s3-proxy
+# 1. Download binary terbaru
+curl -L -o cdn-proxy https://github.com/maulanashalihin/cdn-s3-proxy/releases/download/v1.0.0/cdn-proxy
+chmod +x cdn-proxy
 
-# Configure
-cp .env.example .env
-# edit .env with your Wasabi credentials
+# 2. Pindahkan ke PATH
+sudo mv cdn-proxy /usr/local/bin/
 
-# Build
-go build -o cdn-proxy .
+# 3. Buat config
+sudo mkdir -p /etc/cdn-proxy /var/cache/cdn-proxy
+sudo chown root:root /etc/cdn-proxy
+sudo chmod 600 /etc/cdn-proxy
 
-# Run (manual)
-./cdn-proxy
+# 4. Isi .env
+sudo tee /etc/cdn-proxy/.env << 'EOF'
+WASABI_ACCESS_KEY=your_access_key
+WASABI_SECRET_KEY=your_secret_key
+WASABI_BUCKET=your_bucket
+WASABI_REGION=ap-southeast-1
+WASABI_ENDPOINT=https://s3.ap-southeast-1.wasabisys.com
+CACHE_DIR=/var/cache/cdn-proxy
+EOF
 
-# Or install as systemd service
-sudo cp cdn-proxy.service /etc/systemd/system/
+# 5. Download systemd unit
+sudo curl -o /etc/systemd/system/cdn-proxy.service \
+  https://raw.githubusercontent.com/maulanashalihin/cdn-s3-proxy/main/cdn-proxy.service
+
+# 6. Start
 sudo systemctl daemon-reload
 sudo systemctl enable --now cdn-proxy
+```
+
+### Opsi C: Build dari source (pake Go)
+
+```bash
+git clone https://github.com/maulanashalihin/cdn-s3-proxy.git
+cd cdn-s3-proxy
+cp .env.example .env
+# edit .env with your Wasabi credentials
+go build -o cdn-proxy .
+./cdn-proxy
 ```
 
 ## Configuration
