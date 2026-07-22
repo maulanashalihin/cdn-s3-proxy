@@ -100,19 +100,15 @@ func main() {
 func handleRequest(c *fiber.Ctx) error {
 	path := c.Path()
 
-	// Extract S3 key dari URL path
-	// Format: /{bucket}/{key} atau /{bucket}//{key}
+	// Extract S3 key dari URL path — langsung pake konfigured bucket
 	key := extractS3Key(path)
 	if key == "" {
 		log.Printf("invalid path: %s", path)
-		return c.Status(400).SendString("invalid path: /<bucket>/<key>")
+		return c.Status(400).SendString("invalid path")
 	}
 
-	// Optional: validate bucket name di path cocok
-	if !strings.HasPrefix(c.Path(), "/"+bucket) {
-		// Allow anyway — maybe path doesn't include bucket. Fallback ke configured bucket.
-		// Tapi untuk case ini, path selalu diawali bucket name.
-	}
+	// Hapus leading slash — S3 keys gak mulai dengan /
+	key = strings.TrimPrefix(key, "/")
 
 	// --- Cache check ---
 	cacheKey := sha256Hex(path)
@@ -195,17 +191,10 @@ func handleRequest(c *fiber.Ctx) error {
 }
 
 // extractS3Key extracts the S3 object key from the URL path.
-// Input: /slugpost//assets/file.webp → output: //assets/file.webp (normalized to /assets/file.webp)
+// Input: /robots.txt → robots.txt
+// Gak ada segmen bucket name di path — langsung pake konfigured bucket.
 func extractS3Key(path string) string {
-	path = strings.TrimPrefix(path, "/")
-	// Cari separator pertama setelah bucket name
-	idx := strings.Index(path, "/")
-	if idx < 0 {
-		return ""
-	}
-	// idx = end of bucket name
-	// key = everything after bucket (including the leading slash)
-	key := path[idx:]
+	key := strings.TrimPrefix(path, "/")
 	// Normalize double slashes
 	for strings.Contains(key, "//") {
 		key = strings.ReplaceAll(key, "//", "/")
