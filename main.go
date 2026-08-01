@@ -191,13 +191,18 @@ func handleRequest(c *fiber.Ctx) error {
 }
 
 // extractS3Key extracts the S3 object key from the URL path.
-// Input: /robots.txt → robots.txt
-// Gak ada segmen bucket name di path — langsung pake konfigured bucket.
+// New URL format: /assets/x.webp → assets/x.webp (no bucket prefix)
+// Old URL format (backward compat): /slugpost//assets/x.webp → assets/x.webp
+// The bucket segment is stripped if it matches the configured bucket name.
 func extractS3Key(path string) string {
 	key := strings.TrimPrefix(path, "/")
-	// Normalize double slashes
+	// Normalize double slashes (old URLs had bucket//key due to leading / in s3_key)
 	for strings.Contains(key, "//") {
 		key = strings.ReplaceAll(key, "//", "/")
+	}
+	// Backward compat: strip bucket prefix if present (old URLs: /slugpost/assets/x.webp)
+	if bucket != "" && strings.HasPrefix(key, bucket+"/") {
+		key = strings.TrimPrefix(key, bucket+"/")
 	}
 	return key
 }
