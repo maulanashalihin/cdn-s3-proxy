@@ -107,8 +107,8 @@ func handleRequest(c *fiber.Ctx) error {
 		return c.Status(400).SendString("invalid path")
 	}
 
-	// Hapus leading slash — S3 keys gak mulai dengan /
-	key = strings.TrimPrefix(key, "/")
+	// S3 keys in Wasabi stored with leading / (e.g. /assets/x.webp)
+	// extractS3Key preserves it — do NOT strip here.
 
 	// --- Cache check ---
 	cacheKey := sha256Hex(path)
@@ -191,20 +191,23 @@ func handleRequest(c *fiber.Ctx) error {
 }
 
 // extractS3Key extracts the S3 object key from the URL path.
-// New URL format: /assets/x.webp → assets/x.webp (no bucket prefix)
-// Old URL format (backward compat): /slugpost//assets/x.webp → assets/x.webp
+// S3 keys in Wasabi are stored WITH leading / (e.g. /assets/x.webp).
+// New URL format: /assets/x.webp → /assets/x.webp
+// Old URL format (backward compat): /slugpost//assets/x.webp → /assets/x.webp
 // The bucket segment is stripped if it matches the configured bucket name.
 func extractS3Key(path string) string {
-	key := strings.TrimPrefix(path, "/")
 	// Normalize double slashes (old URLs had bucket//key due to leading / in s3_key)
-	for strings.Contains(key, "//") {
-		key = strings.ReplaceAll(key, "//", "/")
+	for strings.Contains(path, "//") {
+		path = strings.ReplaceAll(path, "//", "/")
 	}
 	// Backward compat: strip bucket prefix if present (old URLs: /slugpost/assets/x.webp)
-	if bucket != "" && strings.HasPrefix(key, bucket+"/") {
-		key = strings.TrimPrefix(key, bucket+"/")
+	if bucket != "" {
+		bucketPrefix := "/" + bucket + "/"
+		if strings.HasPrefix(path, bucketPrefix) {
+			path = "/" + strings.TrimPrefix(path, bucketPrefix)
+		}
 	}
-	return key
+	return path
 }
 
 // --- Cache helpers ---
