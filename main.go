@@ -82,7 +82,7 @@ func main() {
 
 	app.Use(recover.New())
 	app.Use(logger.New(logger.Config{
-		Format: "[${time}] ${ip} ${status} ${latency} ${method} ${path} - ${resBody}${bytesReceived} ${bytesSent}\n",
+		Format: "[${time}] ${ip} ${status} ${latency} ${method} ${path} ${bytesSent}\n",
 	}))
 
 	app.Get("/health", func(c *fiber.Ctx) error {
